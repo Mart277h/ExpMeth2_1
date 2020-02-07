@@ -1,0 +1,233 @@
+---
+title: "Portfolio1_sleepstudy"
+author: "Kristine"
+date: "3/2/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(pacman)
+install.packages("tidyr")
+library(tidyverse)
+library(ggplot2)
+#import data
+sleepstudy <- read.csv("sleepstudy.csv")
+
+df337 <- filter(sleepstudy, Subject == 337)
+
+summary(lm(Reaction~Days, data = df337))
+
+
+```
+#Question 1.a Report the F.statistics
+```{r}
+#1.a F(1,8)=112.1
+```
+
+#Question 1.b How many degrees of freedom does the relevant F-distribution have?
+```{r}
+#1.b df(1,8)
+```
+
+#Question 1.c At which F-value does a regression with the distribution become statistically significant (p<0.05)?
+```{r}
+#Getting the F-score for the 95% significance cutoff using the quantile function qf()
+
+
+cutoff<-qf(0.95,1,8)
+'p=0.05 cutoff value with df(2,12)'
+cutoff
+
+
+#1.c F=5.3
+
+```
+
+#Question 1.d Make a plot of the F-distribution 
+```{r}
+nn <- seq(0,120, len = 1000)
+fdist <- df(nn,1,8)
+plot(nn,fdist, type='l',xlab='F value - df(1,8)',ylab='Density')
+
+#Another way of doing it 
+install.packages("tidyr")
+library(sjPlot)
+dist_f(f=0, deg.f1 =1, deg.f2 = 8, xmax = 10)
+
+```
+
+
+##Task 2 
+For all participant in the experiment:
+#2.a Find the coeffcients (slope and intercept) for the regression for reaction time as a function of days of sleep deprivation (a hint for the solution: use group_by() in tidyverse or this function here: https://stat.ethz.ch/R-manual/R-devel/library/nlme/html/lmList.html, hint2: pool=FALSE
+
+We create a model with reaction time as dependent variable and days of sleep deprivation as the independent variable. A model is made for each subject in the study.
+
+```{r}
+fm1 <- nlme::lmList(Reaction ~ Days | Subject, sleepstudy, pool = FALSE)
+summary(fm1)
+coef(fm1)
+```
+The coeffecients for each model is displayed in the table.
+
+#2.b: Combine both scatter plot and regression line in the same ﬁgure. You may also include all participants in one plot.
+
+We make a plot showing the regression line of each model
+
+```{r}
+ggplot(sleepstudy, aes(y=Reaction, x=Days, color = as.character(Subject)))+
+  geom_point() + 
+  geom_smooth(method = lm, se=FALSE) + #fit the best straight line to the data
+  ggtitle("Reaction time as a function of days of sleep deprivation")
+
+```
+
+
+#2.c: Collect and report the inferential statistics for each participant in a table using t-statistics, including t-value, df and p-value.
+
+```{r}
+
+#we create a list of the models. 
+
+fm2 <- nlme::lmList(Reaction ~ Days | Subject, sleepstudy, pool = FALSE)
+
+#we make a data frame containing the coeffecients from our models
+df_coef <- coef(summary(fm1))
+df_stat <- as_tibble(df_coef)
+
+#We rename the column names 
+names(df_stat)[names(df_stat) == "Estimate.Days"] <- "Slopes"
+names(df_stat)[names(df_stat) == "Estimate.(Intercept)"] <- "Intercept"
+names(df_stat)[names(df_stat) == "Pr(>|t|).Days"] <- "p-value slopes"
+
+view(df_stat)
+  
+```
+
+
+#2.d: How many individual participants display a statistically signiﬁcant effect of sleep deprivation (p-values uncorrected for mulitple comparisons)? 
+We use the select function to look at the relevant p-values. Furthermore we use the filter function to show the p-values that are statistically signinficant (p<0.05)
+
+```{r}
+p_signif <- select(df_stat, "p-value slopes")
+
+p_signif %>% filter("p-value slopes"<0.5)
+
+view(p_signif)
+```
+
+As we cannot make our code above work, we have created individual models for each partcipant. The p-values are taken from the summary output of the models. 
+- furthermore the insignificant p-values can be found in the table displayed in 2.c, by looking in the "p-value slopes" column and  number 4, 5, 6, 9. 
+
+```{r}
+
+df308 <- filter(sleepstudy, Subject == 308)
+summary(lm(Reaction~Days, data = df308))
+#p-value = 0.0033
+
+df309 <- filter(sleepstudy, Subject == 309)
+summary(lm(Reaction~Days, data = df309))
+#p-value = 0.049
+
+df310 <- filter(sleepstudy, Subject == 310)
+summary(lm(Reaction~Days, data = df310))
+#p-value = 0.002
+
+df330 <- filter(sleepstudy, Subject == 330)
+summary(lm(Reaction~Days, data = df330))
+#p-value = 0.255
+
+df331 <- filter(sleepstudy, Subject == 331)
+summary(lm(Reaction~Days, data = df331))
+#p-value = 0.076
+
+df332 <- filter(sleepstudy, Subject == 332)
+summary(lm(Reaction~Days, data = df332))
+#p-value = 0.191
+
+df333 <- filter(sleepstudy, Subject == 333)
+summary(lm(Reaction~Days, data = df333))
+#p-value = 0.0002
+
+df334 <- filter(sleepstudy, Subject == 334)
+summary(lm(Reaction~Days, data = df334))
+#p-value = 0.0006
+
+df335 <- filter(sleepstudy, Subject == 335)
+summary(lm(Reaction~Days, data = df335))
+#p-value = 0.051
+
+df337 <- filter(sleepstudy, Subject == 337)
+summary(lm(Reaction~Days, data = df337))
+#p-value = 0.000005
+
+df349 <- filter(sleepstudy, Subject == 349)
+summary(lm(Reaction~Days, data = df349))
+#p-value = 0.000023
+
+df350 <- filter(sleepstudy, Subject == 350)
+summary(lm(Reaction~Days, data = df350))
+#p-value = 0.000086
+
+df351 <- filter(sleepstudy, Subject == 351)
+summary(lm(Reaction~Days, data = df351))
+#p-value = 0.033
+
+df352 <- filter(sleepstudy, Subject == 352)
+summary(lm(Reaction~Days, data = df352))
+#p-value = 0.0013
+
+df369 <- filter(sleepstudy, Subject == 369)
+summary(lm(Reaction~Days, data = df369))
+#p-value = 0.00019
+
+df370 <- filter(sleepstudy, Subject == 370)
+summary(lm(Reaction~Days, data = df370))
+#p-value = 0.00014
+
+df371 <- filter(sleepstudy, Subject == 371)
+summary(lm(Reaction~Days, data = df371))
+#p-value = 0.010
+
+df372 <- filter(sleepstudy, Subject == 372)
+summary(lm(Reaction~Days, data = df372))
+#p-value = 0.000017
+```
+
+We found that 14 out of 18 participants showed a statistically signiﬁcant effect of sleep deprivation. Subject 330 (p=0.255), 331 (p=0.076), 332 (p=0.191), 335 (p=0.051) had unsignificant p-values. 
+
+##Task 3
+Across participants: 
+3.a: Use the slopes you found for each participant in exercise 2 as a new dataset. Test the hypothesis that the slopes are larger than zero against the null-hypothesis that the slopes are zero (i.e. no differences in response time exist as a function of time).
+
+```{r}
+#Create a dataframe with the slopes
+df_slope <- coef(fm1)
+df_slope <- rename(df_slope, c("Days"="Slope", "(Intercept)"="Intercept"))
+
+#Compare the slopes to the null hypothesis that the slopes equal zero, meaning that there is no relation between days of sleep deprivation and rection time
+t.test(df_slope$Slope, mu = 0.0)
+```
+
+Assumptions - the data should be normally distributed 
+- Manon checked that using a histogram and a Q-Q plot. 
+
+3.b: Justify your use of test statistics.
+
+3.c: Report inferential statistics.
+
+3.d: Make a plot with the mean reaction time and standard errror bars for each day across participants and plot the averaged regression line in the same ﬁgure
+
+```{r}
+ggplot(sleepstudy, aes(x=Days,y=Reaction))+
+  geom_smooth(method=lm)+
+  geom_errorbar(stat="summary", fun.data=mean_se, width=0.3, color ="#000000")+
+  stat_summary()
+```
+
+
